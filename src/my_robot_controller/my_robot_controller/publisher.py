@@ -2,23 +2,28 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
-class RobotStatusPublisher(Node):
+class LEDCommandPublisher(Node):
     def __init__(self):
-        super().__init__('robot_status_publisher')
-        self.publisher_ = self.create_publisher(String, 'robot_status', 10)
-        self.timer = self.create_timer(1.0, self.publish_status)
-        self.get_logger().info("Robot Status Publisher Node Started")
+        super().__init__('led_command_publisher')
+        self.publisher_ = self.create_publisher(String, 'led_control', 10)
 
-    def publish_status(self):
+    def send_command(self, command):
         msg = String()
-        msg.data = "Robot is operational"
+        msg.data = command
         self.publisher_.publish(msg)
         self.get_logger().info(f'Published: "{msg.data}"')
 
 def main(args=None):
     rclpy.init(args=args)
-    node = RobotStatusPublisher()
-    rclpy.spin(node)
+    node = LEDCommandPublisher()
+
+    while rclpy.ok():
+        command = input("Enter 'ON' to turn LED on, 'OFF' to turn LED off: ").strip().upper()
+        if command in ["ON", "OFF"]:
+            node.send_command(command)
+        else:
+            print("Invalid command. Enter 'ON' or 'OFF'.")
+
     node.destroy_node()
     rclpy.shutdown()
 
